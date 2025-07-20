@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vitals Recording - Health Camp Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="vitals.css">
+</head>
+<body>
+    <!-- Camp Selection Modal -->
+    <div id="campSelectionModal" class="modal camp-selection-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🏥 Select Health Camp & Day</h3>
+            </div>
+            <div class="modal-body">
+                <div class="camp-selection-section">
+                    <h4>Available Camps</h4>
+                    <div class="form-group">
+                        <label for="availableCamps">Select a camp *</label>
+                        <select id="availableCamps" required>
+                            <option value="">Loading camps...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="operatingDayGroup" style="display: none;">
+                        <label for="operatingDaySelect">Select operating day *</label>
+                        <select id="operatingDaySelect" required>
+                            <option value="">Select a day</option>
+                        </select>
+                    </div>
+                    <div class="camp-info" id="selectedCampInfo" style="display: none;">
+                        <!-- Selected camp and day details will be shown here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="refreshCampsBtn" class="btn-secondary">Refresh Camps</button>
+                <button type="button" id="selectCampBtn" class="btn-primary" disabled>
+                    <span class="btn-text">Select Camp & Day</span>
+                    <span class="btn-loading" style="display: none;">Loading...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">🏥</div>
+                    <div class="logo-text">
+                        <h2>HealthCamp</h2>
+                        <p>Vitals Recording</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button id="changeCampBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Change Camp & Day</span>
+                    </button>
+                    <button id="refreshDataBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+                
+                <!-- Current Camp Info -->
+                <div class="camp-card" id="campCard">
+                    <div class="loading">Loading camp...</div>
+                </div>
+                
+                <!-- Statistics -->
+                <div class="stats-section">
+                    <h3>📊 Today's Vitals</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="todayVitals">0</div>
+                            <div class="stat-label">Completed Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="pendingVitals">0</div>
+                            <div class="stat-label">Pending Today</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workflow Status -->
+                <div class="workflow-section">
+                    <h3>🏃‍♂️ Current Workflow</h3>
+                    <div class="workflow-steps">
+                        <div class="workflow-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Registration</span>
+                        </div>
+                        <div class="workflow-step active">
+                            <span class="step-icon">📋</span>
+                            <span class="step-label">Vitals</span>
+                        </div>
+                        <div class="workflow-step pending">
+                            <span class="step-icon">👨‍⚕️</span>
+                            <span class="step-label">Doctor</span>
+                        </div>
+                        <div class="workflow-step pending">
+                            <span class="step-icon">💊</span>
+                            <span class="step-label">Pharmacy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Vitals Recording</h1>
+                    <p>Institute of Social Development</p>
+                </div>
+                <div class="top-actions">
+                    <div class="desk-status">
+                        <span class="status-label">Current Desk:</span>
+                        <span class="status-badge vitals">Vitals Station</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <!-- Patient Lookup Section -->
+                <div class="content-card lookup-card">
+                    <div class="card-header">
+                        <h2>🔍 Patient Lookup</h2>
+                        <p>Search by registration number, phone, or name</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="lookup-container">
+                            <div class="lookup-input-group">
+                               <input type="text" id="regNumberInput" placeholder="Enter registration number, phone, or name..." maxlength="50">
+                                <button id="lookupBtn" class="lookup-btn">
+                                    <span class="lookup-icon">🔍</span>
+                                </button>
+                            </div>
+                            <button id="clearLookupBtn" class="clear-lookup-btn">Clear</button>
+                        </div>
+
+                        <div id="recentPatientsSection" class="recent-patients-section">
+                            <h4>Available Patients</h4>
+                            <div id="recentPatientsList" class="recent-patients-list">
+                                <div class="loading">Loading patients...</div>
+                            </div>
+                        </div>
+
+                        <div id="searchResultsSection" class="search-results-section" style="display: none;">
+                            <h4>Search Results</h4>
+                            <div id="searchResultsList" class="search-results-list">
+                                <!-- Search results will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <!-- Patient Info Display -->
+                        <div id="patientInfo" class="patient-info" style="display: none;">
+                            <div class="patient-header">
+                                <h3 id="patientName">Patient Name</h3>
+                                <span id="patientRegNo" class="reg-number">REG001</span>
+                            </div>
+                            <div class="patient-details">
+                                <div class="detail-item">
+                                    <label>Age:</label>
+                                    <span id="patientAge">25</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Gender:</label>
+                                    <span id="patientGender">Male</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Phone:</label>
+                                    <span id="patientPhone">9876543210</span>
+                                </div>
+                                <div class="detail-item">
+                                    <label>Visit Status:</label>
+                                    <span id="visitStatus">Ready for vitals</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vitals Recording Form -->
+                <div class="content-card vitals-card">
+                    <div class="card-header">
+                        <h2 id="vitalsFormTitle">📋 Record Vitals</h2>
+                        <div class="completion-status" id="completionStatus">
+                            <span class="status-icon">⏳</span>
+                            <span class="status-text">Ready to Record</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="vitalsForm" style="display: none;">
+                            <!-- Basic Measurements -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <h3>Basic Measurements</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="bloodPressure">Blood Pressure *</label>
+                                        <input type="text" id="bloodPressure" name="bp" placeholder="e.g., 120/80" pattern="[0-9]{2,3}/[0-9]{2,3}" required>
+                                        <small class="field-hint">Format: Systolic/Diastolic</small>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="heartRate">Heart Rate (BPM) *</label>
+                                        <input type="number" id="heartRate" name="heartRate" min="40" max="200" placeholder="72" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="temperature">Temperature (°F) *</label>
+                                        <input type="number" id="temperature" name="temperature" min="90" max="110" step="0.1" placeholder="98.6" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="height">Height (cm) *</label>
+                                        <input type="number" id="height" name="height" min="50" max="250" placeholder="170" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="weight">Weight (kg) *</label>
+                                        <input type="number" id="weight" name="weight" min="10" max="300" step="0.1" placeholder="70" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="bmi">BMI</label>
+                                        <input type="number" id="bmi" name="bmi" step="0.1" placeholder="Auto-calculated" readonly>
+                                        <small class="field-hint bmi-category" id="bmiCategory"></small>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="respirationRate">Respiration Rate (per min)</label>
+                                        <input type="number" id="respirationRate" name="respirationRate" min="8" max="40" placeholder="16">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="hemoglobin">Hemoglobin (g/dL)</label>
+                                        <input type="number" id="hemoglobin" name="hemoglobin" min="5" max="20" step="0.1" placeholder="12.5">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="bloodGlucose">Blood Glucose (mg/dL)</label>
+                                        <input type="number" id="bloodGlucose" name="bloodGlucose" min="50" max="500" placeholder="100">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Clinical Observations -->
+                            <div class="form-section">
+                                <div class="section-title">
+                                    <h3>Clinical Observations</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="primarySymptoms">Primary Symptoms Observed</label>
+                                        <textarea id="primarySymptoms" name="primarySymptoms" rows="3" placeholder="Document primary symptoms and observations"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="additionalComplaints">Additional Complaints</label>
+                                        <textarea id="additionalComplaints" name="additionalComplaints" rows="2" placeholder="Any additional patient complaints or observations"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" id="clearVitalsBtn" class="btn-secondary">
+                                    <span class="btn-icon">🗑️</span>
+                                    Clear Form
+                                </button>
+                                <button type="submit" id="saveVitalsBtn" class="btn-primary">
+                                    <span class="btn-icon">💾</span>
+                                    <span class="btn-text">Save Vitals</span>
+                                    <span class="btn-loading" style="display: none;">Saving...</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- No Patient Selected State -->
+                        <div id="noPatientState" class="empty-state">
+                            <div class="empty-state-icon">👤</div>
+                            <h3>No Patient Selected</h3>
+                            <p>Please lookup a patient using their registration number to start recording vitals</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Previous Vitals History -->
+                <div class="content-card history-card">
+                    <div class="card-header">
+                        <h2>📈 Vitals History</h2>
+                        <p>Patient's vital signs across all camp days</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="vitalsHistory" class="vitals-history">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📊</div>
+                                <h3>No Previous Records</h3>
+                                <p>No previous vitals found for this patient</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header success">
+                <h3>✅ Vitals Recorded Successfully</h3>
+            </div>
+            <div class="modal-body">
+                <p>Patient vitals have been recorded and saved to the system.</p>
+                <div class="next-actions">
+                    <p><strong>Next Step:</strong> Patient can proceed to Doctor consultation.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="continueBtn" class="btn-primary">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert/Notification System -->
+    <div id="alertContainer" class="alert-container"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="vitals.js"></script>
+</body>
+</html>

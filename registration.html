@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Camp Registration System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="registration.css">
+</head>
+<body>
+    <!-- Camp Selection Modal -->
+    <div id="campSelectionModal" class="modal camp-selection-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🏥 Select Health Camp</h3>
+            </div>
+            <div class="modal-body">
+                <div class="camp-selection-section">
+                    <h4>Available Camps</h4>
+                    <div class="form-group">
+                        <label for="availableCamps">Select a camp *</label>
+                        <select id="availableCamps" required>
+                            <option value="">Loading camps...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="operatingDayGroup" style="display: none;">
+                        <label for="operatingDaySelect">Select operating day *</label>
+                        <select id="operatingDaySelect" required>
+                            <option value="">Select a day</option>
+                        </select>
+                    </div>
+                    <div class="camp-info" id="selectedCampInfo" style="display: none;">
+                        <!-- Selected camp and day details will be shown here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="refreshCampsBtn" class="btn-secondary">Refresh Camps</button>
+                <button type="button" id="selectCampBtn" class="btn-primary" disabled>
+                    <span class="btn-text">Select Camp & Day</span>
+                    <span class="btn-loading" style="display: none;">Loading...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">🏥</div>
+                    <div class="logo-text">
+                        <h2>HealthCamp</h2>
+                        <p>Registration System</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button id="changeCampBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Change Camp</span>
+                    </button>
+                    <button id="refreshDataBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                <!-- Current Camp Info -->
+                <div class="camp-card" id="campCard">
+                    <div class="loading">Loading camp...</div>
+                </div>
+                
+                <!-- Statistics -->
+                <div class="stats-section">
+                    <h3>📊 Today's Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="todayRegistrations">0</div>
+                            <div class="stat-label">Today's Registrations</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalCampRegistrations">0</div>
+                            <div class="stat-label">Total Camp Patients</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Workflow Status -->
+                <div class="workflow-section">
+                    <h3>🏃‍♂️ Current Workflow</h3>
+                    <div class="workflow-steps">
+                        <div class="workflow-step active">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Registration</span>
+                        </div>
+                        <div class="workflow-step pending">
+                            <span class="step-icon">📋</span>
+                            <span class="step-label">Vitals</span>
+                        </div>
+                        <div class="workflow-step pending">
+                            <span class="step-icon">👨‍⚕️</span>
+                            <span class="step-label">Doctor</span>
+                        </div>
+                        <div class="workflow-step pending">
+                            <span class="step-icon">💊</span>
+                            <span class="step-label">Pharmacy</span>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Patient Registration</h1>
+                    <p>Institute of Social Development</p>
+                </div>
+                <div class="top-actions">
+                    <div class="registration-counter">
+                        <span class="counter-label">Next Registration:</span>
+                        <span class="counter-number" id="nextRegNumber">Loading...</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <!-- Search Section -->
+                <div class="content-card search-card">
+                    <div class="card-header">
+                        <h2>🔍 Find Patient</h2>
+                        <p>Search by phone, registration number, or name</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-container">
+                            <div class="search-input-group">
+                                <input type="text" id="searchInput" placeholder="Search" maxlength="50">
+                                <button id="searchBtn" class="search-btn">
+                                    <span class="search-icon">🔍</span>
+                                </button>
+                            </div>
+                            <button id="clearSearchBtn" class="clear-search-btn">Clear</button>
+                        </div>
+                        <div id="searchResults" class="search-results"></div>
+                    </div>
+                </div>
+
+                <!-- Registration Form -->
+                <div class="content-card form-card">
+                    <div class="card-header">
+                        <h2 id="formTitle">👤 New Patient Registration</h2>
+                        <div class="form-progress">
+                            <span class="progress-step active">Personal Info</span>
+                            <span class="progress-step">Medical Info</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="registrationForm">
+                            <!-- Personal Information Section -->
+                            <div class="form-section" id="personalInfoSection">
+                                <div class="section-title">
+                                    <h3>Personal Information</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="patientName">Full Name *</label>
+                                        <input type="text" id="patientName" name="name" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="patientAge">Age *</label>
+                                        <input type="number" id="patientAge" name="age" min="1" max="120" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="patientSex">Gender *</label>
+                                        <select id="patientSex" name="sex" required>
+                                            <option value="">Select Gender</option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">Female</option>
+                                            <option value="Other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="patientPhone">Phone Number *</label>
+                                        <input type="tel" id="patientPhone" name="phone" pattern="[0-9]{10}" maxlength="10" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="patientCategory">Category *</label>
+                                        <select id="patientCategory" name="category" required>
+                                            <option value="">Select Category</option>
+                                            <option value="General">General</option>
+                                            <option value="SC">SC</option>
+                                            <option value="ST">ST</option>
+                                            <option value="OBC">OBC</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="patientEducation">Education</label>
+                                        <input type="text" id="patientEducation" name="education" placeholder="e.g., Graduate, 10th Pass">
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="patientOccupation">Occupation</label>
+                                        <input type="text" id="patientOccupation" name="occupation" placeholder="e.g., Farmer, Teacher">
+                                    </div>
+                                    <div class="form-group full-width">
+                                        <label for="patientAddress">Address *</label>
+                                        <textarea id="patientAddress" name="address" rows="2" required placeholder="Enter complete address"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Medical Information Section -->
+                            <div class="form-section" id="medicalInfoSection">
+                                <div class="section-title">
+                                    <h3>Medical Information</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="presentComplaint">Present Complaint</label>
+                                        <textarea id="presentComplaint" name="presentComplaint" rows="3" placeholder="Describe the chief complaint or reason for visit"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="currentTreatment">Current Treatment</label>
+                                        <textarea id="currentTreatment" name="currentTreatment" rows="2" placeholder="Any ongoing treatment or medications"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" id="clearFormBtn" class="btn-secondary">
+                                    <span class="btn-icon">🗑️</span>
+                                    Clear Form
+                                </button>
+                                <button type="submit" id="submitBtn" class="btn-primary">
+                                    <span class="btn-icon">💾</span>
+                                    <span class="btn-text">Register Patient</span>
+                                    <span class="btn-loading" style="display: none;">Registering...</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Recent Registrations -->
+                <div class="content-card recent-card">
+                    <div class="card-header">
+                        <h2>📋 Recent Registrations</h2>
+                        <p>Latest patient entries for this camp</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="recentPatients" class="recent-list">
+                            <div class="loading">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Patient Details Modal -->
+    <div id="patientModal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Patient Details</h3>
+                <span class="modal-close">&times;</span>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Patient details will be populated here -->
+            </div>
+            <div class="modal-footer">
+                <button id="editPatientBtn" class="btn-secondary">
+                    <span class="btn-icon">✏️</span>
+                    Edit Patient
+                </button>
+                <button id="closeModalBtn" class="btn-primary">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert/Notification System -->
+    <div id="alertContainer" class="alert-container"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="registration.js"></script>
+</body>
+</html>

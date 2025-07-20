@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacy Dashboard - Health Camp Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="pharmacy.css">
+</head>
+<body>
+    <!-- Camp Selection Modal -->
+    <div id="campSelectionModal" class="modal camp-selection-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🏥 Select Health Camp & Day</h3>
+            </div>
+            <div class="modal-body">
+                <div class="camp-selection-section">
+                    <h4>Available Camps</h4>
+                    <div class="form-group">
+                        <label for="availableCamps">Select a camp *</label>
+                        <select id="availableCamps" required>
+                            <option value="">Loading camps...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="operatingDayGroup" style="display: none;">
+                        <label for="operatingDaySelect">Select operating day *</label>
+                        <select id="operatingDaySelect" required>
+                            <option value="">Select a day</option>
+                        </select>
+                    </div>
+                    <div class="camp-info" id="selectedCampInfo" style="display: none;">
+                        <!-- Selected camp and day details will be shown here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="refreshCampsBtn" class="btn-secondary">Refresh Camps</button>
+                <button type="button" id="selectCampBtn" class="btn-primary" disabled>
+                    <span class="btn-text">Select Camp & Day</span>
+                    <span class="btn-loading" style="display: none;">Loading...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">💊</div>
+                    <div class="logo-text">
+                        <h2>HealthCamp</h2>
+                        <p>Pharmacy</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button id="changeCampBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Change Camp & Day</span>
+                    </button>
+                    <button id="refreshDataBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                <!-- Current Camp Info -->
+                <div class="camp-card" id="campCard">
+                    <div class="loading">Loading camp...</div>
+                </div>
+                
+                <!-- Statistics -->
+                <div class="stats-section">
+                    <h3>📊 Today's Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="todayDispensed">0</div>
+                            <div class="stat-label">Dispensed Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="pendingDispense">0</div>
+                            <div class="stat-label">Pending Today</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workflow Status -->
+                <div class="workflow-section">
+                    <h3>🏃‍♂️ Current Workflow</h3>
+                    <div class="workflow-steps">
+                        <div class="workflow-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Registration</span>
+                        </div>
+                        <div class="workflow-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Vitals</span>
+                        </div>
+                        <div class="workflow-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Doctor</span>
+                        </div>
+                        <div class="workflow-step active">
+                            <span class="step-icon">💊</span>
+                            <span class="step-label">Pharmacy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Pharmacy Dispensing</h1>
+                    <p>Institute of Social Development</p>
+                </div>
+                <div class="top-actions">
+                    <div class="desk-status">
+                        <span class="status-label">Current Desk:</span>
+                        <span class="status-badge pharmacy">Pharmacy Station</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <!-- Patient Search Section -->
+                <div class="content-card search-card">
+                    <div class="card-header">
+                        <h2>🔍 Patient Lookup</h2>
+                        <p>Search patients ready for medicine dispensing</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-container">
+                            <div class="search-input-group">
+                                <input type="text" id="searchInput" placeholder="Search by registration number, phone, or name..." maxlength="50">
+                                <button id="searchBtn" class="search-btn">
+                                    <span class="search-icon">🔍</span>
+                                </button>
+                            </div>
+                            <button id="clearSearchBtn" class="clear-search-btn">Clear</button>
+                        </div>
+                        
+                        <!-- Ready Patients Section -->
+                        <div id="readyPatientsSection" class="ready-patients-section">
+                            <h4>Ready for Medicine Dispensing</h4>
+                            <div id="readyPatientsList" class="ready-patients-list">
+                                <div class="loading">Loading patients...</div>
+                            </div>
+                        </div>
+
+                        <!-- Search Results -->
+                        <div id="searchResultsSection" class="search-results-section" style="display: none;">
+                            <h4>Search Results</h4>
+                            <div id="searchResultsList" class="search-results-list">
+                                <!-- Search results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Information Panel -->
+                <div class="content-card patient-info-card">
+                    <div class="card-header">
+                        <h2 id="patientInfoTitle">👤 Patient Information</h2>
+                        <div class="patient-status" id="patientStatus">
+                            <span class="status-icon">⏳</span>
+                            <span class="status-text">No Patient Selected</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="patientInfo" class="patient-info" style="display: none;">
+                            <!-- Patient details will be populated here -->
+                        </div>
+                        <div id="noPatientState" class="empty-state">
+                            <div class="empty-state-icon">👤</div>
+                            <h3>No Patient Selected</h3>
+                            <p>Please select a patient from the list to view their information</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medicine Dispensing Form -->
+                <div class="content-card dispensing-card">
+                    <div class="card-header">
+                        <h2>💊 Medicine Dispensing</h2>
+                        <div class="dispensing-progress">
+                            <span class="progress-step active">Review Prescription</span>
+                            <span class="progress-step">Dispense Medicines</span>
+                            <span class="progress-step">Complete</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="dispensingForm" style="display: none;">
+                            <!-- Prescription Review Section -->
+                            <div class="form-section" id="prescriptionSection">
+                                <div class="section-title">
+                                    <h3>📋 Today's Prescription</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div id="prescriptionList" class="prescription-list">
+                                    <!-- Prescribed medicines will be populated here -->
+                                </div>
+                            </div>
+
+                            <!-- Dispensing Details Section -->
+                            <div class="form-section" id="dispensingSection">
+                                <div class="section-title">
+                                    <h3>💉 Dispensing Details</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div id="dispensingList" class="dispensing-list">
+                                    <!-- Dispensing form will be populated here -->
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="dispensingNotes">Dispensing Notes</label>
+                                        <textarea id="dispensingNotes" name="dispensingNotes" rows="3" placeholder="Any special instructions or notes for the patient"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" id="clearDispensingBtn" class="btn-secondary">
+                                    <span class="btn-icon">🗑️</span>
+                                    Clear Form
+                                </button>
+                                <button type="submit" id="saveDispensingBtn" class="btn-primary">
+                                    <span class="btn-icon">💾</span>
+                                    <span class="btn-text">Complete Dispensing</span>
+                                    <span class="btn-loading" style="display: none;">Saving...</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- No Patient Selected State -->
+                        <div id="noDispensingState" class="empty-state">
+                            <div class="empty-state-icon">💊</div>
+                            <h3>No Patient Selected</h3>
+                            <p>Please select a patient to start medicine dispensing</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medicine Database -->
+                <div class="content-card medicine-db-card">
+                    <div class="card-header">
+                        <h2>🏪 Medicine Database</h2>
+                        <p>Search available medicines</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="medicine-search-container">
+                            <div class="medicine-search-group">
+                                <input type="text" id="medicineSearchInput" placeholder="Search medicines..." maxlength="50">
+                                <button id="medicineSearchBtn" class="medicine-search-btn">
+                                    <span class="search-icon">🔍</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="medicineResults" class="medicine-results">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">💊</div>
+                                <h3>Medicine Database</h3>
+                                <p>Search for medicines above</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dispensing History -->
+                <div class="content-card history-card">
+                    <div class="card-header">
+                        <h2>📋 Dispensing History</h2>
+                        <p>Patient's medicine dispensing across all camp days</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="dispensingHistory" class="dispensing-history">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📊</div>
+                                <h3>No Patient Selected</h3>
+                                <p>Select a patient to view their dispensing history</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header success">
+                <h3>✅ Medicines Dispensed Successfully</h3>
+            </div>
+            <div class="modal-body">
+                <p>Patient medicines have been dispensed and recorded in the system.</p>
+                <div class="next-actions">
+                    <p><strong>Journey Complete:</strong> Patient has completed all health camp stations for today.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="continueBtn" class="btn-primary">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert/Notification System -->
+    <div id="alertContainer" class="alert-container"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="pharmacy.js"></script>
+</body>
+</html>

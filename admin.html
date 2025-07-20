@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - User Registration</title>
+    <link rel="stylesheet" href="admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+   <div class="admin-container">
+        <!-- Header -->
+        <div class="header-card">
+            <img src="Institute-of-Social-Development.png" alt="Institute of Social Development Logo" class="admin-logo">
+            <h1>Health Camp Admin Panel</h1>
+            <p>Manage Sponsors, Camps, and Desk Users</p>
+        </div>
+
+        <!-- Main Forms Grid -->
+        <div class="main-grid">
+            <!-- Sponsor Card -->
+            <div class="form-card">
+                <h2>
+                    <span class="icon">🎯</span>
+                    Create Sponsor
+                </h2>
+                <form id="sponsorForm">
+                    <div class="form-group">
+                        <label for="sponsorName">Sponsor Name</label>
+                        <input type="text" id="sponsorName" placeholder="e.g., Tata Steel" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="sponsorCode">Sponsor Code</label>
+                        <input type="text" id="sponsorCode" placeholder="e.g., TATA" maxlength="6" required />
+                    </div>
+                    <button type="submit" class="btn-primary">Create Sponsor</button>
+                </form>
+            </div>
+
+            <!-- Camp Card -->
+            <div class="form-card">
+                <h2>
+                    <span class="icon">🏥</span>
+                    Manage Camp
+                </h2>
+                <form id="campForm">
+                    <div class="form-group">
+                        <label for="campName">Camp Name</label>
+                        <input type="text" id="campName" placeholder="e.g., Health Camp - Mumbai" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="campLocation">Location</label>
+                        <input type="text" id="campLocation" placeholder="e.g., Mumbai" required />
+                    </div>
+                    <div class="form-group">
+                        <label for="campSponsor">Select Sponsor</label>
+                        <select id="campSponsor" required>
+                            <option value="">Select Sponsor</option>
+                        </select>
+                    </div>
+                    <div class="existing-camp-info" id="existingCampInfo" style="display: none;">
+                        <div class="info-box">
+                            <h4>Existing Camp Found</h4>
+                            <p id="existingCampDetails"></p>
+                            <p><strong>Current Operating Days:</strong> <span id="currentOperatingDays"></span></p>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="operatingDays">Operating Days</label>
+                        <div class="operating-days-container">
+                            <div class="date-input-row">
+                                <input type="date" class="operating-date" required />
+                                <button type="button" class="btn-remove-date" style="display: none;">×</button>
+                            </div>
+                        </div>
+                        <button type="button" id="addDateBtn" class="btn-secondary" style="width: auto; margin-top: 0.5rem;">+ Add Another Date</button>
+                    </div>
+                    <button type="submit" class="btn-primary" id="campSubmitBtn">Create Camp</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Role Management -->
+        <div class="role-management">
+            <h2>
+                <span class="icon">👥</span>
+                User Role Management
+            </h2>
+            <div class="role-grid">
+                <div class="role-card" data-role="registration">
+                    <span class="role-icon">📋</span>
+                    <div class="role-title">Registration Desk</div>
+                </div>
+                <div class="role-card" data-role="vitals">
+                    <span class="role-icon">🩺</span>
+                    <div class="role-title">Vitals Desk</div>
+                </div>
+                <div class="role-card" data-role="doctor">
+                    <span class="role-icon">👨‍⚕️</span>
+                    <div class="role-title">Doctor Desk</div>
+                </div>
+                <div class="role-card" data-role="pharmacy">
+                    <span class="role-icon">💊</span>
+                    <div class="role-title">Pharmacy Desk</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal -->
+        <div class="modal" id="userModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Register New User</h2>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="userForm">
+                        <div class="form-group">
+                            <label for="userName">Full Name *</label>
+                            <input type="text" id="userName" placeholder="Enter full name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userEmail">Email ID *</label>
+                            <input type="email" id="userEmail" placeholder="Enter email address" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userPassword">Password *</label>
+                            <input type="password" id="userPassword" placeholder="Enter password" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userPhone">Phone Number *</label>
+                            <input type="tel" id="userPhone" placeholder="Enter 10-digit phone number" maxlength="10" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="userRole">Role *</label>
+                            <input type="text" id="userRole" readonly>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" class="btn-secondary" onclick="document.getElementById('userModal').style.display='none'">Cancel</button>
+                            <button type="submit" class="btn-primary">Register User</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="alertContainer" class="alert-container"></div>
+    </div>
+
+    <!-- Firebase & Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="admin.js"></script>
+
+</body>
+</html>

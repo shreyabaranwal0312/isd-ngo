@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard - Health Camp Management</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="doctor.css">
+</head>
+<body>
+    <!-- Camp Selection Modal - UPDATED FOR MULTI-DAY SUPPORT -->
+    <div id="campSelectionModal" class="modal camp-selection-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>🏥 Select Health Camp & Day</h3>
+            </div>
+            <div class="modal-body">
+                <div class="camp-selection-section">
+                    <h4>Available Camps</h4>
+                    <div class="form-group">
+                        <label for="availableCamps">Select a camp *</label>
+                        <select id="availableCamps" required>
+                            <option value="">Loading camps...</option>
+                        </select>
+                    </div>
+                    <div class="form-group" id="operatingDayGroup" style="display: none;">
+                        <label for="operatingDaySelect">Select operating day *</label>
+                        <select id="operatingDaySelect" required>
+                            <option value="">Select a day</option>
+                        </select>
+                    </div>
+                    <div class="camp-info" id="selectedCampInfo" style="display: none;">
+                        <!-- Selected camp and day details will be shown here -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="refreshCampsBtn" class="btn-secondary">Refresh Camps</button>
+                <button type="button" id="selectCampBtn" class="btn-primary" disabled>
+                    <span class="btn-text">Select Camp & Day</span>
+                    <span class="btn-loading" style="display: none;">Loading...</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">🏥</div>
+                    <div class="logo-text">
+                        <h2>HealthCamp</h2>
+                        <p>Doctor Dashboard</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="sidebar-content">
+                <!-- Quick Actions -->
+                <div class="quick-actions">
+                    <button id="changeCampBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Change Camp & Day</span>
+                    </button>
+                    <button id="refreshDataBtn" class="action-button">
+                        <span class="action-icon">🔄</span>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                <!-- Current Camp Info - UPDATED -->
+                <div class="camp-card" id="campCard">
+                    <div class="loading">Loading camp...</div>
+                </div>
+                
+                <!-- Statistics -->
+                <div class="stats-section">
+                    <h3>📊 Today's Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="todayConsultations">0</div>
+                            <div class="stat-label">Consultations Today</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="pendingConsultations">0</div>
+                            <div class="stat-label">Pending Today</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workflow Status -->
+                <div class="workflow-section">
+                    <h3>🏃‍♂️ Current Workflow</h3>
+                    <div class="workflow-steps">
+                        <div class="workflow-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Registration</span>
+                        </div>
+                        <div class="workflow-step completed">
+                            <span class="step-icon">✓</span>
+                            <span class="step-label">Vitals</span>
+                        </div>
+                        <div class="workflow-step active">
+                            <span class="step-icon">👨‍⚕️</span>
+                            <span class="step-label">Doctor</span>
+                        </div>
+                        <div class="workflow-step pending">
+                            <span class="step-icon">💊</span>
+                            <span class="step-label">Pharmacy</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-container">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="page-title">
+                    <h1>Doctor Consultation</h1>
+                    <p>Institute of Social Development</p>
+                </div>
+                <div class="top-actions">
+                    <div class="desk-status">
+                        <span class="status-label">Current Desk:</span>
+                        <span class="status-badge doctor">Doctor Station</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <!-- Patient Search Section -->
+                <div class="content-card search-card">
+                    <div class="card-header">
+                        <h2>🔍 Patient Lookup</h2>
+                        <p>Search patients ready for consultation</p>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-container">
+                            <div class="search-input-group">
+                                <input type="text" id="searchInput" placeholder="Search by registration number, phone, or name..." maxlength="50">
+                                <button id="searchBtn" class="search-btn">
+                                    <span class="search-icon">🔍</span>
+                                </button>
+                            </div>
+                            <button id="clearSearchBtn" class="clear-search-btn">Clear</button>
+                        </div>
+                        
+                        <!-- Ready Patients Section -->
+                        <div id="readyPatientsSection" class="ready-patients-section">
+                            <h4>Ready for Consultation</h4>
+                            <div id="readyPatientsList" class="ready-patients-list">
+                                <div class="loading">Loading patients...</div>
+                            </div>
+                        </div>
+
+                        <!-- Search Results -->
+                        <div id="searchResultsSection" class="search-results-section" style="display: none;">
+                            <h4>Search Results</h4>
+                            <div id="searchResultsList" class="search-results-list">
+                                <!-- Search results will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient Information Panel - ENHANCED -->
+                <div class="content-card patient-info-card">
+                    <div class="card-header">
+                        <h2 id="patientInfoTitle">👤 Patient Information</h2>
+                        <div class="patient-status" id="patientStatus">
+                            <span class="status-icon">⏳</span>
+                            <span class="status-text">No Patient Selected</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <!-- Current Visit Vitals Tab Controls -->
+                        <div id="vitalsTabControls" class="vitals-tab-controls" style="display: none;">
+                            <button class="vitals-tab-btn active" data-tab="current">Current Visit</button>
+                            <button class="vitals-tab-btn" data-tab="previous">Previous Vitals</button>
+                        </div>
+                        
+                        <div id="patientInfo" class="patient-info" style="display: none;">
+                            <!-- Patient details will be populated here -->
+                        </div>
+                        
+                        <div id="noPatientState" class="empty-state">
+                            <div class="empty-state-icon">👤</div>
+                            <h3>No Patient Selected</h3>
+                            <p>Please select a patient from the list to view their information</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Consultation Form - ENHANCED WITH EDITING SUPPORT -->
+                <div class="content-card consultation-card">
+                    <div class="card-header">
+                        <h2 id="consultationFormTitle">🩺 Medical Consultation</h2>
+                        <div class="consultation-progress" id="consultationStatus">
+                            <span class="progress-step active">Ready</span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <form id="consultationForm" style="display: none;">
+                            <!-- Hidden field to track if we're editing -->
+                            <input type="hidden" id="isEditing" value="false">
+                            
+                            <!-- Diagnosis Section -->
+                            <div class="form-section" id="diagnosisSection">
+                                <div class="section-title">
+                                    <h3>Diagnosis & Assessment</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="primaryDiagnosis">Primary Diagnosis *</label>
+                                        <textarea id="primaryDiagnosis" name="primaryDiagnosis" rows="3" required placeholder="Enter primary diagnosis"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="secondaryDiagnosis">Secondary Diagnosis</label>
+                                        <textarea id="secondaryDiagnosis" name="secondaryDiagnosis" rows="2" placeholder="Enter secondary diagnosis if any"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="clinicalFindings">Clinical Findings</label>
+                                        <textarea id="clinicalFindings" name="clinicalFindings" rows="3" placeholder="Document clinical observations and findings"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Treatment Section -->
+                            <div class="form-section" id="treatmentSection">
+                                <div class="section-title">
+                                    <h3>Treatment Plan</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="treatmentPlan">Treatment Plan *</label>
+                                        <textarea id="treatmentPlan" name="treatmentPlan" rows="4" required placeholder="Enter detailed treatment plan"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="additionalNotes">Additional Notes</label>
+                                        <textarea id="additionalNotes" name="additionalNotes" rows="2" placeholder="Any additional notes or observations"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Prescription Section -->
+                            <div class="form-section" id="prescriptionSection">
+                                <div class="section-title">
+                                    <h3>Medicine Prescription</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="medicines-container">
+                                    <div class="medicine-item">
+                                        <div class="form-row">
+                                            <div class="form-group">
+                                                <label for="medicine1">Medicine Name</label>
+                                                <input type="text" id="medicine1" name="medicine1" placeholder="e.g., Paracetamol 500mg">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="dosage1">Dosage</label>
+                                                <input type="text" id="dosage1" name="dosage1" placeholder="e.g., 1 tablet">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="frequency1">Frequency</label>
+                                                <select id="frequency1" name="frequency1">
+                                                    <option value="">Select frequency</option>
+                                                    <option value="Once daily">Once daily</option>
+                                                    <option value="Twice daily">Twice daily</option>
+                                                    <option value="Three times daily">Three times daily</option>
+                                                    <option value="Four times daily">Four times daily</option>
+                                                    <option value="As needed">As needed</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="duration1">Duration</label>
+                                                <input type="text" id="duration1" name="duration1" placeholder="e.g., 5 days">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <button type="button" id="addMedicineBtn" class="btn-secondary">
+                                    <span class="btn-icon">➕</span>
+                                    Add Medicine
+                                </button>
+                            </div>
+
+                            <!-- Follow-up and Referral Section -->
+                            <div class="form-section" id="followupSection">
+                                <div class="section-title">
+                                    <h3>Follow-up & Referral</h3>
+                                    <div class="section-divider"></div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="followUpRequired">Follow-up Required?</label>
+                                        <select id="followUpRequired" name="followUpRequired">
+                                            <option value="no">No</option>
+                                            <option value="yes">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="followUpDate">Follow-up Date</label>
+                                        <input type="date" id="followUpDate" name="followUpDate">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="followUpType">Follow-up Type</label>
+                                        <select id="followUpType" name="followUpType">
+                                            <option value="">Select type</option>
+                                            <option value="routine">Routine Check-up</option>
+                                            <option value="medication">Medication Review</option>
+                                            <option value="condition">Condition Monitoring</option>
+                                            <option value="specialist">Specialist Consultation</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="referralRequired">Referral Required?</label>
+                                        <select id="referralRequired" name="referralRequired">
+                                            <option value="no">No</option>
+                                            <option value="yes">Yes</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="referralSpecialty">Referral Specialty</label>
+                                        <select id="referralSpecialty" name="referralSpecialty">
+                                            <option value="">Select specialty</option>
+                                            <option value="cardiology">Cardiology</option>
+                                            <option value="dermatology">Dermatology</option>
+                                            <option value="orthopedics">Orthopedics</option>
+                                            <option value="ophthalmology">Ophthalmology</option>
+                                            <option value="ent">ENT</option>
+                                            <option value="gynecology">Gynecology</option>
+                                            <option value="psychiatry">Psychiatry</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="referralUrgency">Urgency</label>
+                                        <select id="referralUrgency" name="referralUrgency">
+                                            <option value="">Select urgency</option>
+                                            <option value="routine">Routine</option>
+                                            <option value="urgent">Urgent</option>
+                                            <option value="emergency">Emergency</option>
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-row">
+                                    <div class="form-group full-width">
+                                        <label for="referralReason">Referral Reason</label>
+                                        <textarea id="referralReason" name="referralReason" rows="2" placeholder="Reason for referral"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Form Actions -->
+                            <div class="form-actions">
+                                <button type="button" id="clearConsultationBtn" class="btn-secondary">
+                                    <span class="btn-icon">🗑️</span>
+                                    Clear Form
+                                </button>
+                                <button type="submit" id="saveConsultationBtn" class="btn-primary">
+                                    <span class="btn-icon">💾</span>
+                                    <span class="btn-text">Save Consultation</span>
+                                    <span class="btn-loading" style="display: none;">Saving...</span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- No Patient Selected State -->
+                        <div id="noConsultationState" class="empty-state">
+                            <div class="empty-state-icon">🩺</div>
+                            <h3>No Patient Selected</h3>
+                            <p>Please select a patient to start consultation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Patient History - ENHANCED FOR MULTI-DAY -->
+                <div class="content-card history-card">
+                    <div class="card-header">
+                        <h2>📋 Patient History</h2>
+                        <p>All consultations for this patient in current camp</p>
+                    </div>
+                    <div class="card-body">
+                        <div id="patientHistory" class="patient-history">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">📊</div>
+                                <h3>No Patient Selected</h3>
+                                <p>Select a patient to view their consultation history</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header success">
+                <h3>✅ Consultation Completed Successfully</h3>
+            </div>
+            <div class="modal-body">
+                <p>Patient consultation has been recorded and saved to the system.</p>
+                <div class="next-actions">
+                    <p><strong>Next Step:</strong> Patient can proceed to Pharmacy if medications were prescribed.</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="continueBtn" class="btn-primary">Continue</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Alert/Notification System -->
+    <div id="alertContainer" class="alert-container"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    <script src="doctor.js"></script>
+</body>
+</html>
